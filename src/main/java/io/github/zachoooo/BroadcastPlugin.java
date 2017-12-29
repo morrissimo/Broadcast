@@ -45,7 +45,10 @@ import java.util.concurrent.TimeUnit;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-@Plugin(id = "broadcast", name = "Broadcast", version = "1.2", description = "Automatically make broadcasts to your server.")
+@Plugin(id = "broadcast", name = "Broadcast", version = "1.3",
+    description = "Automatically make broadcasts to your server.",
+    url = "https://github.com/morrissimo/Broadcast",
+    authors = {"zachoooo", "morrissimo"},)
 public class BroadcastPlugin {
 
     @Inject
@@ -58,12 +61,14 @@ public class BroadcastPlugin {
     @Inject
     @DefaultConfig(sharedRoot = true)
     private ConfigurationLoader<CommentedConfigurationNode> config;
+    private ConfigurationNode rootNode;
 
     private List<Broadcast> broadcasts = new ArrayList<Broadcast>();
     private int messageIndex = 0;
     private int previousIndex = 0;
     private Task asyncBroadcastTask;
     private boolean noRepeat;
+    private boolean isRandom;
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
@@ -111,6 +116,23 @@ public class BroadcastPlugin {
         previousIndex = i;
     }
 
+    private long getDelay(ConfigurationNode rootNode) {
+        String delayType;
+        long delay = 60;
+        delayType = rootNode.getNode("delay", "type").getString("constant");
+        if (delayType.equals("constant")) {
+            delay = rootNode.getNode("delay", "constant").getInt(60);
+        } else if (delayType.equals("random")) {
+            int minDelay = rootNode.getNode("delay", "random", "min").getInt(60);
+            int maxDelay = rootNode.getNode("delay", "random", "max").getInt(120);
+            Random rnd = new Random();
+            delay = rnd.nextInt((maxDelay + 1) - minDelay) + minDelay;
+        } else {
+            getLogger().error("Unsupported delay type configured - falling back to constant (60s)");
+        }
+        return delay;
+    }
+
     public void loadMessages() {
         getLogger().info("Loading messages...");
         Path potentialFile = getConfigPath();
@@ -126,7 +148,6 @@ public class BroadcastPlugin {
         }
         loader =
                 HoconConfigurationLoader.builder().setPath(potentialFile).build();
-        ConfigurationNode rootNode;
         try {
             rootNode = loader.load();
         } catch (IOException e) {
@@ -156,27 +177,34 @@ public class BroadcastPlugin {
             return;
         }
         getLogger().info("Successfully loaded messages.");
-        long delay = rootNode.getNode("delay").getInt(60);
         noRepeat = rootNode.getNode("no-repeat").getBoolean(true);
-        asyncBroadcastTask = Task.builder().async().interval(delay, TimeUnit.SECONDS).name("Broadcast - Schedule Messages").execute(() -> {
-            if (rootNode.getNode("random").getBoolean(false)) {
-                Random random = new Random();
-                int nextIndex = random.nextInt(broadcasts.size());
-                if (noRepeat && broadcasts.size() > 1) {
-                    while (nextIndex == previousIndex) {
-                        nextIndex = random.nextInt(broadcasts.size());
-                    }
-                }
-                Broadcast randomBroadcast = broadcasts.get(nextIndex);
-                randomBroadcast.runBroadcast();
-                previousIndex = nextIndex;
-            } else {
-                Broadcast broadcast = broadcasts.get(messageIndex++);
-                broadcast.runBroadcast();
-                if (messageIndex == broadcasts.size()) {
-                    messageIndex = 0;
+        isRandom = rootNode.getNode("random").getBoolean(false);
+        asyncBroadcastTask = Task.builder().async().delay(getDelay(rootNode), TimeUnit.SECONDS).name("Broadcast - Schedule Messages").execute(() -> {
+            this.executeTask();
+        }).submit(this);
+    }
+
+    private void executeTask() {
+        if (isRandom) {
+            Random random = new Random();
+            int nextIndex = random.nextInt(broadcasts.size());
+            if (noRepeat && broadcasts.size() > 1) {
+                while (nextIndex == previousIndex) {
+                    nextIndex = random.nextInt(broadcasts.size());
                 }
             }
+            Broadcast randomBroadcast = broadcasts.get(nextIndex);
+            randomBroadcast.runBroadcast();
+            previousIndex = nextIndex;
+        } else {
+            Broadcast broadcast = broadcasts.get(messageIndex++);
+            broadcast.runBroadcast();
+            if (messageIndex == broadcasts.size()) {
+                messageIndex = 0;
+            }
+        }
+        asyncBroadcastTask = Task.builder().async().delay(getDelay(rootNode), TimeUnit.SECONDS).name("Broadcast - Schedule Messages").execute(() -> {
+            this.executeTask();
         }).submit(this);
     }
 
