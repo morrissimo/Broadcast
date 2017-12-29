@@ -124,3 +124,4 @@ The compiled jar will be located in `./build/libs`.
 
 ## Authors
 * zachoooo
+* morrissimo
