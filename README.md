@@ -1,4 +1,4 @@
-Broadcast [![Build Status](https://travis-ci.org/zachoooo/Broadcast.svg?branch=master)](https://travis-ci.org/zachoooo/Broadcast)
+Broadcast [![Build Status](https://travis-ci.org/morrissimo/Broadcast.svg?branch=master)](https://travis-ci.org/morrissimo/Broadcast)
 =========
 A sponge plugin for sending automated messages to your server.
 
