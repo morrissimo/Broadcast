@@ -27,56 +27,68 @@ Donations of any kind are always appreciated. [Donate here!](https://www.paypal.
 ## Configuration
 **Default Config**
 ```
-delay=60
-messages=[
-    {
-        color=red
-        text="Thank you for choosing Broadcast!"
+{
+    "delay": {
+        "type": "constant",
+        "constant": 60,
+        "random": {
+            "min": 5,
+            "max": 20
+        }
     },
-    {
-        color=yellow
-        text="This plugin was written by zachoooo."
-    },
-    {
-        color=aqua
-        text="Edit the configuration to put your own messages in."
-    },
-    {
-        color=yellow
-        extra=[
-            {
-                text="["
-            },
-            {
-                clickEvent {
-                    action="open_url"
-                    value="http://www.github.com/zachoooo/Broadcast"
-                }
-                color=green
-                text=Github
-            }
-        ]
-        text="Fork me on "
-    }
-]
-prefix {
-    extra=[
+    "messages": [
         {
-            color=yellow
-            text=Broadcast
+            "color": "red",
+            "text": "Thank you for choosing Broadcast!"
         },
         {
-            text="] "
+            "color": "yellow",
+            "text": "This plugin was written by zachoooo & morrissimo."
+        },
+        {
+            "color": "aqua",
+            "text": "Edit the configuration to put your own messages in."
+        },
+        {
+            "color": "yellow",
+            "extra": [
+                {
+                    "text": "["
+                },
+                {
+                    "clickEvent": {
+                        "action": "open_url",
+                        "value": "http://www.github.com/morrissimo/Broadcast"
+                    },
+                    "color": "green",
+                    "text": "Github"
+                },
+                {
+                    "text": "]"
+                }
+            ],
+            "text": "Fork me on "
         }
-    ]
-    text="["
+    ],
+    "prefix": {
+        "extra": [
+            {
+                "color": "yellow",
+                "text": "Broadcast"
+            },
+            {
+                "text": "] "
+            }
+        ],
+        "text": "["
+    },
+    "random": false,
+    "no-repeat": true
 }
-random=false
-no-repeat=true
 
 ```
 
-**delay**: The time in seconds between broadcasts being displayed
+**delay**: Contains settings to control how much time (in seconds) elapses between broadcasts being displayed. The subkey "type" should be one of "constant" or "random"; the other subkeys should be used to configure the behavior based on the specified "type".
 
 **prefix**: Some text displayed before a broadcast to indicate that the message is a broadcast.
 
@@ -101,7 +113,7 @@ There are some generators that you can use to help you format chat:
 **Note:** If you do not have Gradle installed then use ./gradlew for Unix systems or Git Bash and gradlew.bat for Windows systems in place of any 'gradle' command.
 
 Run the following commands to build the project yourself.
- 
+
 ```
 git clone https://github.com/zachoooo/Broadcast.git
 cd Broadcast
