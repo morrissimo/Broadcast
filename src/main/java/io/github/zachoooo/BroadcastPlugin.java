@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 @Plugin(id = "broadcast", name = "Broadcast", version = "1.3",
     description = "Automatically make broadcasts to your server.",
     url = "https://github.com/morrissimo/Broadcast",
-    authors = {"zachoooo", "morrissimo"},)
+    authors = {"zachoooo", "morrissimo"})
 public class BroadcastPlugin {
 
     @Inject
